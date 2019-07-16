@@ -1,7 +1,23 @@
 #! /usr/bin/env bash
 
+REVERT=false
+
+while test $# -gt 0; do
+  case "$1" in
+    --revert)
+      REVERT=true
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+JS_START="// First make sure the wrapper app is loaded"
+
 JS="
-// First make sure the wrapper app is loaded
+${JS_START}
 document.addEventListener('DOMContentLoaded', function() {
   // Fetch our CSS in parallel ahead of time
   const cssPath = 'https://raw.githubusercontent.com/caiceA/slack-raw/master/slack-4';
@@ -36,9 +52,24 @@ fi
 
 SLACK_FILE_PATH="${SLACK_RESOURCES_DIR}/app.asar.unpacked/dist/ssb-interop.bundle.js"
 
-echo "Adding Dark Theme Code to Slack... "
+if [ "$REVERT" = true ]; then
+echo "Bringing Slack into the light... "
+else
+echo "Bringing Slack into the darknesss... "
+fi
+
+echo ""
 echo "This script requires sudo privileges." && echo "You'll need to provide your password."
 
 sudo npx asar extract ${SLACK_RESOURCES_DIR}/app.asar ${SLACK_RESOURCES_DIR}/app.asar.unpacked
-sudo tee -a "${SLACK_FILE_PATH}" > /dev/null <<< "$JS"
+
+if [ "$REVERT" = true ]; then
+  sudo sed -i.backup '1,/\/\/# sourceMappingURL=ssb-interop.bundle.js.map/!d' ${SLACK_FILE_PATH}
+else
+  sudo tee -a "${SLACK_FILE_PATH}" > /dev/null <<< "$JS"
+fi
+
 sudo npx asar pack ${SLACK_RESOURCES_DIR}/app.asar.unpacked ${SLACK_RESOURCES_DIR}/app.asar
+
+echo ""
+echo "Slack Updated! Refresh or reload slack to see changes"

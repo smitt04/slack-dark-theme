@@ -41,16 +41,30 @@ if [[ -z $SLACK_RESOURCES_DIR ]]; then
   # Assume on windows if the linux and osx paths failed.
   # Get Windows environment info:
   WIN_HOME_RAW="$(cmd.exe /c "<nul set /p=%UserProfile%" 2>/dev/null)"
-  WIN_HOME="$(wslpath $WIN_HOME_RAW)"
+  USERPROFILE_DRIVE="${WIN_HOME_RAW%%:*}:"
+  USERPROFILE_MNT="$(findmnt --noheadings --first-only --output TARGET "$USERPROFILE_DRIVE")"
+  USERPROFILE_DIR="${WIN_HOME_RAW#*:}"
+  WIN_HOME="${USERPROFILE_MNT}${USERPROFILE_DIR//\\//}"
 
   # Find latest version installed
   APP_VER="$(ls -dt ${WIN_HOME}/AppData/Local/slack/app*/)"
   IFS='/', read -a APP_VER_ARR <<< "$APP_VER"
-  
+
   SLACK_RESOURCES_DIR="${WIN_HOME}/AppData/Local/slack/${APP_VER_ARR[8]}/resources"
 fi
 
 SLACK_FILE_PATH="${SLACK_RESOURCES_DIR}/app.asar.unpacked/dist/ssb-interop.bundle.js"
+
+# Check if commands exist
+if ! command -v node >/dev/null 2>&1; then
+  echo "Node.js is not installed. Please install before continuing."
+  echo "Node.js is available from: https://nodejs.org/en/download/"
+  exit 1
+fi
+if ! command -v npx >/dev/null 2>&1; then
+  echo "npm is not installed. Please install before continuing."
+  exit 1
+fi
 
 if [ "$REVERT" = true ]; then
 echo "Bringing Slack into the light... "

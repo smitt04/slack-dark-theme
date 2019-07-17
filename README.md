@@ -3,7 +3,7 @@
 This is a small script that applies a dark theme to slack. Slack 4+ required as they changed the internals in that version.
 
 Thanks to [@caiceA](https://github.com/caiceA/slack-black-theme) for his work on the CSS portion of the theme.
-Thanks to [@guyhakestorm](https://github.com/guyhalestorm) for his work on the windows section.
+Thanks to [@guyhalestorm](https://github.com/guyhalestorm) for his work on the windows section.
 
 The issues were raised in https://github.com/widget-/slack-black-theme/issues/98 so I created a script to support osx, linux and windows.
 

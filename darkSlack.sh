@@ -47,22 +47,25 @@ if [[ -z $SLACK_RESOURCES_DIR ]]; then
   WIN_HOME="${USERPROFILE_MNT}${USERPROFILE_DIR//\\//}"
 
   # Find latest version installed
-  APP_VER="$(ls -dt ${WIN_HOME}/AppData/Local/slack/app*/)"
+  APP_VER=$(ls -dt "${WIN_HOME}"/AppData/Local/slack/app*/)
   IFS='/', read -a APP_VER_ARR <<< "$APP_VER"
 
-  SLACK_RESOURCES_DIR="${WIN_HOME}/AppData/Local/slack/${APP_VER_ARR[8]}/resources"
+  SLACK_RESOURCES_DIR="${WIN_HOME}"/AppData/Local/slack/"${APP_VER_ARR[8]}"/resources
 fi
 
-SLACK_FILE_PATH="${SLACK_RESOURCES_DIR}/app.asar.unpacked/dist/ssb-interop.bundle.js"
+SLACK_FILE_PATH="${SLACK_RESOURCES_DIR}"/app.asar.unpacked/dist/ssb-interop.bundle.js
 
 # Check if commands exist
 if ! command -v node >/dev/null 2>&1; then
   echo "Node.js is not installed. Please install before continuing."
-  echo "Node.js is available from: https://nodejs.org/en/download/"
+  exit 1
+fi
+if ! command -v npm >/dev/null 2>&1; then
+  echo "npm is not installed. Please install before continuing."
   exit 1
 fi
 if ! command -v npx >/dev/null 2>&1; then
-  echo "npm is not installed. Please install before continuing."
+  echo "npx is not installed. run `npm i -g npx` to install."
   exit 1
 fi
 
@@ -75,15 +78,15 @@ fi
 echo ""
 echo "This script requires sudo privileges." && echo "You'll need to provide your password."
 
-sudo npx asar extract ${SLACK_RESOURCES_DIR}/app.asar ${SLACK_RESOURCES_DIR}/app.asar.unpacked
+sudo npx asar extract "${SLACK_RESOURCES_DIR}"/app.asar "${SLACK_RESOURCES_DIR}"/app.asar.unpacked
 
 if [ "$REVERT" = true ]; then
-  sudo sed -i.backup '1,/\/\/# sourceMappingURL=ssb-interop.bundle.js.map/!d' ${SLACK_FILE_PATH}
+  sudo sed -i.backup '1,/\/\/# sourceMappingURL=ssb-interop.bundle.js.map/!d' "${SLACK_FILE_PATH}"
 else
   sudo tee -a "${SLACK_FILE_PATH}" > /dev/null <<< "$JS"
 fi
 
-sudo npx asar pack ${SLACK_RESOURCES_DIR}/app.asar.unpacked ${SLACK_RESOURCES_DIR}/app.asar
+sudo npx asar pack "${SLACK_RESOURCES_DIR}"/app.asar.unpacked "${SLACK_RESOURCES_DIR}"/app.asar
 
 echo ""
 echo "Slack Updated! Refresh or reload slack to see changes"

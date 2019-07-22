@@ -41,7 +41,7 @@ if [[ -z $SLACK_RESOURCES_DIR ]]; then
   # Assume on windows if the linux and osx paths failed.
   # Get Windows environment info:
   WIN_HOME_RAW="$(cmd.exe /c "<nul set /p=%UserProfile%" 2>/dev/null)"
-  USERPROFILE_DRIVE="${WIN_HOME_RAW%%:*}:"
+  USERPROFILE_DRIVE="${WIN_HOME_RAW%%:*}:\\"
   USERPROFILE_MNT="$(findmnt --noheadings --first-only --output TARGET "$USERPROFILE_DRIVE")"
   USERPROFILE_DIR="${WIN_HOME_RAW#*:}"
   WIN_HOME="${USERPROFILE_MNT}${USERPROFILE_DIR//\\//}"
